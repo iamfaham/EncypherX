@@ -22,8 +22,11 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json({ message: 'Password added successfully', password: newPassword }, { status: 201 })
-  } catch (error:any) {
-    return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 400 })
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Failed to update password:', error.message)
+      return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 400 })
+    }
   }
 }
 
@@ -40,7 +43,10 @@ export async function GET() {
     })
 
     return NextResponse.json(passwords)
-  } catch (error:any) {
-    return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 400 })
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Failed to update password:', error.message)
+      return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 400 })
+    }
   }
 }

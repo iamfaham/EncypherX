@@ -81,7 +81,7 @@ export default function AddPasswordForm({ onAdd }: AddPasswordFormProps) {
         <PasswordStrengthMeter password={password} />
       </div>
       {showGenerator && (
-        <PasswordGenerator onGenerate={(generatedPassword:any) => setPassword(generatedPassword)} />
+        <PasswordGenerator onGenerate={(generatedPassword) => setPassword(generatedPassword)} />
       )}
       <div>
         <Label htmlFor="url">URL (optional)</Label>

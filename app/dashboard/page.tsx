@@ -70,7 +70,7 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <p>You haven't added any passwords yet.</p>
+          <p>You haven&apos;t added any passwords yet.</p>
         )}
       </div>
       <div>
