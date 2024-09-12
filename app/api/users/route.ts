@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       user: { id: user.id, name: user.name, email: user.email } 
     }, { status: 201 })
   } catch (error) {
-        if (error instanceof Error) {
+    if (error instanceof Error) {
       console.error('Failed to update password:', error.message)
       return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 400 })
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,13 +23,37 @@ interface EditPasswordFormProps {
 export default function EditPasswordForm({ password, onUpdate, onCancel }: EditPasswordFormProps) {
   const [title, setTitle] = useState(password.title)
   const [username, setUsername] = useState(password.username)
-  const [newPassword, setNewPassword] = useState(password.password)
+  const [newPassword, setNewPassword] = useState('')
   const [url, setUrl] = useState(password.url || '')
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchPassword = async () => {
+      try {
+        const response = await fetch(`/api/passwords/${password.id}`)
+        if (response.ok) {
+          const data = await response.json()
+          setNewPassword(data.password)
+        } else {
+          setError('Failed to fetch current password')
+        }
+      } catch (error) {
+        console.error('Error fetching password:', error)
+        setError('An error occurred while fetching the password')
+      }
+    }
+
+    fetchPassword()
+  }, [password.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!title || !username || !newPassword) {
+      setError('All fields are required')
+      return
+    }
 
     try {
       const response = await fetch(`/api/passwords/${password.id}`, {
@@ -46,6 +70,7 @@ export default function EditPasswordForm({ password, onUpdate, onCancel }: EditP
         setError(data.message || 'Failed to update password')
       }
     } catch (error) {
+      console.error('Error updating password:', error)
       setError('An error occurred while updating the password')
     }
   }
