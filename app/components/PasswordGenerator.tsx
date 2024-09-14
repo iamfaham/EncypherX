@@ -50,10 +50,10 @@ export default function PasswordGenerator({ onGenerate }: PasswordGeneratorProps
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <Input value={password} readOnly className="flex-grow" />
-        <Button onClick={copyToClipboard} size="icon" variant="outline">
+        <Button type='button' onClick={copyToClipboard} size="icon" variant="outline">
           <Copy className="h-4 w-4" />
         </Button>
-        <Button onClick={generatePassword} size="icon">
+        <Button type='button' onClick={generatePassword} size="icon">
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
@@ -102,7 +102,7 @@ export default function PasswordGenerator({ onGenerate }: PasswordGeneratorProps
           <Label htmlFor="symbols">Include Symbols</Label>
         </div>
       </div>
-      <Button onClick={generatePassword} className="w-full">
+      <Button type='button' onClick={generatePassword} className="w-full">
         Generate Password
       </Button>
     </div>

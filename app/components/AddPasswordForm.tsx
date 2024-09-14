@@ -4,19 +4,21 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import PasswordGenerator from './PasswordGenerator'
 import PasswordStrengthMeter from './PasswordStrengthMeter'
 
 interface AddPasswordFormProps {
-  onAdd: () => Promise<void>;
+  onPasswordAdded: () => void
 }
 
-export default function AddPasswordForm({ onAdd }: AddPasswordFormProps) {
+export default function AddPasswordForm({ onPasswordAdded }: AddPasswordFormProps) {
   const [title, setTitle] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [url, setUrl] = useState('')
   const [message, setMessage] = useState('')
+  const [notes, setNotes] = useState('')
   const [showGenerator, setShowGenerator] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,13 +30,16 @@ export default function AddPasswordForm({ onAdd }: AddPasswordFormProps) {
         body: JSON.stringify({ title, username, password, url }),
       })
       if (response.ok) {
+        const data = await response.json()
+        console.log('Password added:', data.password)
+        onPasswordAdded()  // Call the function after successful addition
         setMessage('Password added successfully!')
         setTitle('')
         setUsername('')
         setPassword('')
         setUrl('')
+        setNotes('')
         setShowGenerator(false)
-        await onAdd()  // Call the onAdd function after successful addition
       } else {
         const data = await response.json()
         setMessage(data.message || 'An error occurred')
@@ -89,6 +94,14 @@ export default function AddPasswordForm({ onAdd }: AddPasswordFormProps) {
           id="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+        />
+      </div>
+      <div>
+        <Label htmlFor="notes">Notes (optional)</Label>
+        <Textarea
+          id="notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
         />
       </div>
       <Button type="submit" className="w-full">Add Password</Button>

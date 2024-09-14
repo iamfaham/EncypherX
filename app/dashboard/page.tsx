@@ -104,7 +104,7 @@ export default function Dashboard() {
                   />
                 ) : (
                   <>
-                    <ViewPassword password={password} onDelete={handleDelete} />
+                    <ViewPassword password={password} onDelete={handleDelete} onUpdate={fetchPasswords}/>
                     <Button onClick={() => setEditingId(password.id)} className="mt-2">
                       Edit
                     </Button>
@@ -119,7 +119,7 @@ export default function Dashboard() {
       </div>
       <div>
         <h2 className="text-xl font-semibold mb-4">Add New Password</h2>
-        <AddPasswordForm onAdd={fetchPasswords} />
+        <AddPasswordForm onPasswordAdded={fetchPasswords} />
       </div>
     </div>
   )

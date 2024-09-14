@@ -45,6 +45,7 @@ model SharedPassword {
   sharedWith User     @relation(fields: [userId], references: [id])
   userId     String
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt  // Add this line
 
   @@unique([passwordId, userId])
 }

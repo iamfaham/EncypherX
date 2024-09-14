@@ -29,6 +29,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 })
     }
 
+    // Check if the password is already shared with this user
+    const existingShare = await prisma.sharedPassword.findUnique({
+      where: {
+        passwordId_userId: {
+          passwordId: passwordId,
+          userId: userToShareWith.id,
+        },
+      },
+    })
+
+    if (existingShare) {
+      return NextResponse.json({ message: 'Password already shared with this user' }, { status: 400 })
+    }
+
     // Create the shared password entry
     const sharedPassword = await prisma.sharedPassword.create({
       data: {

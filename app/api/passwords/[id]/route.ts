@@ -44,7 +44,6 @@ export async function GET(
     }
   }
 }
-
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
@@ -55,10 +54,20 @@ export async function PUT(
   }
 
   try {
+    // Check if the user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 })
+    }
+
     const { title, username, password, url } = await request.json()
 
     const existingPassword = await prisma.password.findUnique({
       where: { id: params.id },
+      include: { sharedWith: true }
     })
 
     if (!existingPassword || existingPassword.userId !== userId) {
@@ -81,7 +90,16 @@ export async function PUT(
         password: encryptedPassword,
         url 
       },
+      include: { sharedWith: { select: { userId: true } } }
     })
+
+    // If the password is shared, update the SharedPassword entries
+    if (updatedPassword.sharedWith.length > 0) {
+      await prisma.sharedPassword.updateMany({
+        where: { passwordId: params.id },
+        data: { updatedAt: new Date() }
+      })
+    }
 
     return NextResponse.json({
       ...updatedPassword,
@@ -94,7 +112,6 @@ export async function PUT(
     }
   }
 }
-
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
@@ -104,23 +121,32 @@ export async function DELETE(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
   }
 
+  const { id } = params
+
   try {
-    const password = await prisma.password.findUnique({
-      where: { id: params.id },
+    // First, delete all related SharedPassword entries
+    await prisma.sharedPassword.deleteMany({
+      where: {
+        passwordId: id,
+      },
     })
 
-    if (!password || password.userId !== userId) {
+    // Then, delete the password
+    const deletedPassword = await prisma.password.delete({
+      where: {
+        id: id,
+        userId: userId, // Ensure the password belongs to the current user
+      },
+    })
+
+    if (!deletedPassword) {
       return NextResponse.json({ message: 'Password not found' }, { status: 404 })
     }
-
-    await prisma.password.delete({
-      where: { id: params.id },
-    })
 
     return NextResponse.json({ message: 'Password deleted successfully' })
   } catch (error) {
     if (error instanceof Error) {
-      console.error('Failed to update password:', error.message)
+      console.error('Failed to delete password:', error)
       return NextResponse.json({ message: 'Failed to delete password', error: error.message }, { status: 500 })
     }
   }

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 
 interface SharePasswordFormProps {
   passwordId: string
-  onShare: () => void
+  onShare: (email:string) => void
 }
 
 export default function SharePasswordForm({ passwordId, onShare }: SharePasswordFormProps) {
@@ -27,12 +27,13 @@ export default function SharePasswordForm({ passwordId, onShare }: SharePassword
         body: JSON.stringify({ passwordId, email }),
       })
 
+      const data = await response.json()
+
       if (response.ok) {
-        setSuccess('Password shared successfully')
+        setSuccess(data.message || 'Password shared successfully')
         setEmail('')
-        onShare()
+        onShare(email)
       } else {
-        const data = await response.json()
         setError(data.message || 'Failed to share password')
       }
     } catch (error) {
