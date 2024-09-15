@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EncypherX
 
-## Getting Started
+EncypherX is a robust password manager designed to securely store, manage, and share passwords. It offers features like user authentication, AES-encrypted password storage, password strength analysis, and a built-in password generator. With support for password sharing and categories or tags for easy organization, EncypherX simplifies password management while ensuring top-notch security. A Chrome extension is also included for seamless access to your passwords directly from the browser.
 
-First, run the development server:
+## Features
+
+- **User Authentication**: Secure login and registration using bcrypt.
+- **Encrypted Password Storage**: Store passwords securely with AES encryption.
+- **Password Strength Analysis**: Evaluate the strength of your passwords.
+- **Password Generator**: Easily generate strong, secure passwords.
+- **Password Sharing**: Share passwords securely with others.
+- **Categories/Tags**: Organize your passwords using categories or tags for easy management.
+- **Chrome Extension**: Access and manage your passwords directly from your browser.
+
+## Usage
+
+1. **Register/Login**: Create an account or log in to manage your passwords.
+2. **Add a Password**: Securely store passwords with AES encryption.
+3. **Analyze Password Strength**: Use the password strength analyzer to check the security of your passwords.
+4. **Generate a Password**: Use the password generator to create strong passwords.
+5. **Share Passwords**: Securely share passwords with others using the sharing feature.
+6. **Organize Passwords**: Use categories or tags to easily manage and differentiate your passwords.
+7. **Use the Chrome Extension**: Install and use the Chrome extension for quick access to your stored passwords.
+
+## Tech Stack
+
+- **Frontend**: Next.js
+- **Backend**: Next.js API routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Security**: AES Encryption, bcrypt for authentication
+- **Extension**: Chrome Extension for easy browser access
+
+## Run Locally
+
+To get started with EncypherX locally, follow these steps:
+
+### Prerequisites
+
+- Node.js
+- PostgreSQL database
+
+### Steps
+
+- Clone the repository:
+
+```bash
+git clone https://github.com/iamfaham/EncypherX.git
+```
+
+- Navigate to the project directory:
+
+```bash
+cd EncypherX
+```
+
+- Install dependencies:
+
+```bash
+npm install
+```
+
+- Set up the environment variables:
+  Create a .env file (or .env.local) in the root directory with the `DATABASE_URL` variable.
+
+- Run the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Access the app: Open your browser and navigate to `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Future Enhancements
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Chrome Extension**: Will expand the functionality of the Chrome extension with additional features like autofill and direct integration with websites for seamless password input.
+- **Native Mobile App**: Develop a mobile application for Android and iOS to allow users to manage their passwords on the go.
 
-## Learn More
+# Hi, I'm Faham! 👋
 
-To learn more about Next.js, take a look at the following resources:
+Hey there! I'm Faham, a software developer who loves working on cool projects around AI, web development, and security. Right now, I'm interning at an AI startup based in the UK, and I’m always exploring new ways to build things that are both functional and secure.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you want to connect or chat about tech (or anything else), hit me up on [LinkedIn](https://www.linkedin.com/in/iamfaham) & [X](https://x.com/iamfaham)!
