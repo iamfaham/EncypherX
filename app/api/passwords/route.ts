@@ -57,6 +57,12 @@ export async function GET() {
             createdAt: true,
             updatedAt: true,
           }
+        },
+        tags: {
+          select: {
+            id: true,
+            name: true,
+          }
         }
       },
     })

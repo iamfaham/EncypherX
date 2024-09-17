@@ -12,6 +12,12 @@ interface Password {
   username: string
   password: string
   url?: string
+  tags: Tag[]
+}
+
+interface Tag {
+  id: string
+  name: string
 }
 
 interface EditPasswordFormProps {

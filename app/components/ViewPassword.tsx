@@ -4,13 +4,18 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, Copy, Trash2, Share2, UserMinus } from 'lucide-react'
+import { Eye, EyeOff, Copy, Trash2, Share2, UserMinus, Tag as TagIcon } from 'lucide-react'
 import SharePasswordForm from './SharePasswordForm'
 
 interface SharedWith {
   id: string
   email: string
   userId: string
+}
+
+interface Tag {
+  id: string
+  name: string
 }
 
 interface Password {
@@ -20,12 +25,13 @@ interface Password {
   password: string
   url?: string
   sharedWith?: SharedWith[]
+  tags?: Tag[]
 }
 
 interface ViewPasswordProps {
   password: Password
   onDelete: (id: string) => void
-  onUpdate: () => void
+  onUpdate: (updatedPassword: Password) => void
 }
 
 export default function ViewPassword({ password, onDelete, onUpdate }: ViewPasswordProps) {
@@ -34,11 +40,13 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
   const [error, setError] = useState('')
   const [showShareForm, setShowShareForm] = useState(false)
   const [sharedWith, setSharedWith] = useState<SharedWith[]>(password.sharedWith || [])
+  const [tags, setTags] = useState<Tag[]>(password.tags || [])
+  const [newTag, setNewTag] = useState('')
   
   useEffect(() => {
     setSharedWith(password.sharedWith || [])
-  }, [password.sharedWith])
-
+    setTags(password.tags || [])
+  }, [password.sharedWith, password.tags])
   const handleViewPassword = async () => {
     try {
       const response = await fetch(`/api/passwords/${password.id}`, {
@@ -91,6 +99,52 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
     }
   }
 
+  const handleAddTag = async () => {
+    if (!newTag.trim()) return
+
+    try {
+      const response = await fetch(`/api/passwords/${password.id}/tags`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newTag.trim() }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const updatedTags = [...tags, data.tag]
+        setTags(updatedTags)
+        setNewTag('')
+        onUpdate({ ...password, tags: updatedTags })  // Call onUpdate with the updated password
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Failed to add tag')
+      }
+    } catch (error) {
+      console.error('Error adding tag:', error)
+      setError('An error occurred while adding the tag')
+    }
+  }
+
+  const handleRemoveTag = async (tagId: string) => {
+    try {
+      const response = await fetch(`/api/passwords/${password.id}/tags/${tagId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        const updatedTags = tags.filter(tag => tag.id !== tagId)
+        setTags(updatedTags)
+        onUpdate({ ...password, tags: updatedTags })  // Call onUpdate with the updated password
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Failed to remove tag')
+      }
+    } catch (error) {
+      console.error('Error removing tag:', error)
+      setError('An error occurred while removing the tag')
+    }
+  }
+
   const handleRevokeShare = async (sharedWithUserId: string) => {
     try {
       const response = await fetch('/api/passwords/revoke-share', {
@@ -100,8 +154,9 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
       })
 
       if (response.ok) {
-        setSharedWith(sharedWith.filter(user => user.id !== sharedWithUserId))
-        onUpdate() // Trigger a refresh of the password list
+        const updatedSharedWith = sharedWith.filter(user => user.userId !== sharedWithUserId)
+        setSharedWith(updatedSharedWith)
+        onUpdate({ ...password, sharedWith: updatedSharedWith })  // Call onUpdate with the updated password
       } else {
         const data = await response.json()
         setError(data.message || 'Failed to revoke sharing')
@@ -122,9 +177,10 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
 
       if (response.ok) {
         const data = await response.json()
-        setSharedWith([...sharedWith, { id: data.sharedPassword.userId, email , userId: data.userId}])
+        const updatedSharedWith = [...sharedWith, { id: data.sharedPassword.userId, email, userId: data.userId }]
+        setSharedWith(updatedSharedWith)
         setShowShareForm(false)
-        onUpdate() // Trigger a refresh of the password list
+        onUpdate({ ...password, sharedWith: updatedSharedWith })  // Call onUpdate with the updated password
       } else {
         const errorData = await response.json()
         setError(errorData.message || 'Failed to share password')
@@ -201,7 +257,34 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
           </div>
         </div>
       )}
-
+      {'tags' in password && password.tags && (
+      <div className="space-y-2">
+        <Label htmlFor={`tags-${password.id}`}>Tags</Label>
+        <div className="flex flex-wrap gap-2">
+          {tags.map(tag => (
+            <div key={tag.id} className="flex items-center bg-primary text-primary-foreground px-2 py-1 rounded">
+              <span>{tag.name}</span>
+              <Button onClick={() => handleRemoveTag(tag.id)} size="sm" variant="ghost" className="ml-1 p-0">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center space-x-2">
+          <Input
+            id={`tags-${password.id}`}
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            placeholder="Add a new tag"
+            className="flex-grow"
+          />
+          <Button onClick={handleAddTag} size="sm" variant="outline">
+            <TagIcon className="h-4 w-4 mr-2" />
+            Add Tag
+          </Button>
+        </div>
+      </div>
+      )}
       {error && <p className="text-red-500 text-sm">{error}</p>}
       
       <div className="space-y-4">

@@ -14,28 +14,30 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String?
-  password  String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  passwords Password[]
+  id              String           @id @default(cuid())
+  email           String           @unique
+  name            String?
+  password        String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  passwords       Password[]
   sharedPasswords SharedPassword[]
+  Tag             Tag[]
 }
 
 model Password {
-  id          String   @id @default(cuid())
-  title       String
-  username    String
-  password    String
-  url         String?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  sharedWith  SharedPassword[]
+  id         String           @id @default(cuid())
+  title      String
+  username   String
+  password   String
+  url        String?
+  notes      String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  user       User             @relation(fields: [userId], references: [id])
+  userId     String
+  sharedWith SharedPassword[]
+  tags       Tag[]
 }
 
 model SharedPassword {
@@ -45,7 +47,17 @@ model SharedPassword {
   sharedWith User     @relation(fields: [userId], references: [id])
   userId     String
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt  // Add this line
+  updatedAt  DateTime @updatedAt // Add this line
 
   @@unique([passwordId, userId])
+}
+
+model Tag {
+  id        String     @id @default(cuid())
+  name      String
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String
+  passwords Password[]
+
+  @@unique([name, userId])
 }
