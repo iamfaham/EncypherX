@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/app/lib/prisma'
+import prisma from '@/lib/prisma'
 import { cookies } from 'next/headers'
 
 
@@ -41,116 +41,60 @@ export async function GET() {
   if (!userId) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
   }
+
   try {
-    const passwords = await prisma.password.findMany({
+    const ownedPasswords = await prisma.password.findMany({
       where: { userId },
-      select: {
-        id: true,
-        title: true,
-        username: true,
-        url: true,
+      include: {
+        tags: true,
         sharedWith: {
-          select: {
-            id: true,
-            passwordId: true,
-            userId: true,
-            createdAt: true,
-            updatedAt: true,
-          }
-        },
-        tags: {
-          select: {
-            id: true,
-            name: true,
+          include: {
+            sharedWith: {
+              select: {
+                id: true,
+                email: true,
+              }
+            }
           }
         }
-      },
+      }
     })
 
-    // Fetch emails for all shared users
-    const sharedUserIds = passwords.flatMap(password => 
-      password.sharedWith.map(share => share.userId)
-    )
-    const userEmails = await prisma.user.findMany({
-      where: { id: { in: sharedUserIds } },
-      select: { id: true, email: true }
+    const sharedPasswords = await prisma.sharedPassword.findMany({
+      where: { userId },
+      include: {
+        password: {
+          include: {
+            tags: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+              }
+            }
+          }
+        }
+      }
     })
 
-    // Create a map of user IDs to emails for quick lookup
-    const emailMap = new Map(userEmails.map(user => [user.id, user.email]))
-
-    // Format the passwords with shared user emails
-    const formattedPasswords = passwords.map(password => ({
-      ...password,
-      sharedWith: password.sharedWith.map(share => ({
-        ...share,
-        email: emailMap.get(share.userId) || null
-      }))
+    const formattedOwnedPasswords = ownedPasswords.map(p => ({
+      ...p,
+      isShared: false,
+      sharedBy: null
     }))
 
-    return NextResponse.json(formattedPasswords)
+    const formattedSharedPasswords = sharedPasswords.map(sp => ({
+      ...sp.password,
+      isShared: true,
+      sharedBy: sp.password.user
+    }))
+
+    const allPasswords = [...formattedOwnedPasswords, ...formattedSharedPasswords]
+
+    return NextResponse.json(allPasswords)
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Failed to fetch passwords:', error.message)
-      return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 400 })
-    }
+    console.error('Failed to fetch passwords:', error)
+    return NextResponse.json({ message: 'Failed to fetch passwords' }, { status: 500 })
   }
 }
-
-    // export async function POST(request: Request) {
-    //   const userId = cookies().get('user_id')?.value
-    //   if (!userId) {
-    //     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    //   }
-    
-    //   try {
-    //     const { passwordId, email } = await request.json()
-    
-    //     // Check if the password belongs to the current user
-    //     const password = await prisma.password.findUnique({
-    //       where: { id: passwordId, userId: userId },
-    //     })
-    
-    //     if (!password) {
-    //       return NextResponse.json({ message: 'Password not found' }, { status: 404 })
-    //     }
-    
-    //     // Find the user to share with
-    //     const userToShareWith = await prisma.user.findUnique({
-    //       where: { email },
-    //     })
-    
-    //     if (!userToShareWith) {
-    //       return NextResponse.json({ message: 'User not found' }, { status: 404 })
-    //     }
-    
-    //     // Check if the password is already shared with this user
-    //     const existingShare = await prisma.sharedPassword.findUnique({
-    //       where: {
-    //         passwordId_userId: {
-    //           passwordId: passwordId,
-    //           userId: userToShareWith.id,
-    //         },
-    //       },
-    //     })
-    
-    //     if (existingShare) {
-    //       return NextResponse.json({ message: 'Password already shared with this user' }, { status: 400 })
-    //     }
-    
-    //     // Create the shared password entry
-    //     const sharedPassword = await prisma.sharedPassword.create({
-    //       data: {
-    //         passwordId,
-    //         userId: userToShareWith.id,
-    //       },
-    //     })
-    
-    //     return NextResponse.json({ message: 'Password shared successfully', sharedPassword })
-    //   } catch (error) {
-    //     if (error instanceof Error) {
-    //       console.error('Failed to share password:', error)
-    //       return NextResponse.json({ message: 'Failed to share password', error: error.message }, { status: 500 })
-    //     }
-    //   }
-    // }
+  

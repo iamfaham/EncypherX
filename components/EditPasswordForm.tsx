@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import PasswordStrengthMeter from './PasswordStrengthMeter'
+import { Eye, EyeOff } from 'lucide-react'
 
 interface Password {
   id: string
@@ -12,12 +12,12 @@ interface Password {
   username: string
   password: string
   url?: string
-  tags: Tag[]
-}
-
-interface Tag {
-  id: string
-  name: string
+  tags: { id: string; name: string }[]
+  isShared: boolean
+  sharedBy?: {
+    id: string
+    email: string
+  }
 }
 
 interface EditPasswordFormProps {
@@ -29,58 +29,35 @@ interface EditPasswordFormProps {
 export default function EditPasswordForm({ password, onUpdate, onCancel }: EditPasswordFormProps) {
   const [title, setTitle] = useState(password.title)
   const [username, setUsername] = useState(password.username)
-  const [newPassword, setNewPassword] = useState('')
+  const [passwordValue, setPasswordValue] = useState(password.password)
   const [url, setUrl] = useState(password.url || '')
+  const [showPassword, setShowPassword] = useState(true)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    const fetchPassword = async () => {
-      try {
-        const response = await fetch(`/api/passwords/${password.id}`)
-        if (response.ok) {
-          const data = await response.json()
-          setNewPassword(data.password)
-        } else {
-          setError('Failed to fetch current password')
-        }
-      } catch (error) {
-        console.error('Error fetching password:', error)
-        setError('An error occurred while fetching the password')
-      }
-    }
-
-    fetchPassword()
-  }, [password.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (!title || !username || !newPassword) {
-      setError('All fields are required')
-      return
-    }
-
+  
     try {
       const response = await fetch(`/api/passwords/${password.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, username, password: newPassword, url }),
+        body: JSON.stringify({ title, username, password: passwordValue, url }),
       })
-
+  
       if (response.ok) {
         const updatedPassword = await response.json()
         onUpdate(updatedPassword)
       } else {
-        const data = await response.json()
-        setError(data.message || 'Failed to update password')
+        const errorData = await response.json()
+        setError(errorData.message || 'Failed to update password')
       }
     } catch (error) {
       console.error('Error updating password:', error)
       setError('An error occurred while updating the password')
     }
   }
-
+  
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -103,14 +80,25 @@ export default function EditPasswordForm({ password, onUpdate, onCancel }: EditP
       </div>
       <div>
         <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          required
-        />
-        <PasswordStrengthMeter password={newPassword} />
+        <div className="flex items-center space-x-2">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            // value={passwordValue}
+            value={''}
+            onChange={(e) => setPasswordValue(e.target.value)}
+            required
+            className="flex-grow"
+          />
+          <Button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            size="sm"
+            variant="outline"
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
       <div>
         <Label htmlFor="url">URL (optional)</Label>
@@ -120,10 +108,14 @@ export default function EditPasswordForm({ password, onUpdate, onCancel }: EditP
           onChange={(e) => setUrl(e.target.value)}
         />
       </div>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Update Password</Button>
+        <Button type="button" onClick={onCancel} variant="outline">
+          Cancel
+        </Button>
+        <Button type="submit">
+          Save Changes
+        </Button>
       </div>
     </form>
   )

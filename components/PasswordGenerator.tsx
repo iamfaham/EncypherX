@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Copy, RefreshCw } from 'lucide-react'
-import PasswordStrengthMeter from './PasswordStrengthMeter'
+import PasswordStrengthMeter from '@/components/PasswordStrengthMeter'
 
 interface PasswordGeneratorProps {
     onGenerate: (password: string) => void;

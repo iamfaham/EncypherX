@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import AddPasswordForm from '@/components/AddPasswordForm'
 import ViewPassword from '@/components/ViewPassword'
 import EditPasswordForm from '@/components/EditPasswordForm'
 import { Search } from 'lucide-react'
-import PasswordList from '@/components/PasswordList'
+
+interface Tag {
+  id: string
+  name: string
+}
 
 interface Password {
   id: string
@@ -23,12 +26,7 @@ interface Password {
   }
 }
 
-export interface Tag {
-  id: string;
-  name: string;
-}
-
-export default function Dashboard() {
+export default function PasswordList() {
   const [passwords, setPasswords] = useState<Password[]>([])
   const [filteredPasswords, setFilteredPasswords] = useState<Password[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -59,15 +57,8 @@ export default function Dashboard() {
         throw new Error('Failed to fetch passwords')
       }
       const data = await response.json()
-      if (Array.isArray(data)) {
-        setPasswords(data)
-        setFilteredPasswords(data)
-      } else if (data.passwords && Array.isArray(data.passwords)) {
-        setPasswords(data.passwords)
-        setFilteredPasswords(data.passwords)
-      } else {
-        throw new Error('Invalid data format received')
-      }
+      setPasswords(data)
+      setFilteredPasswords(data)
     } catch (error) {
       console.error('Error fetching passwords:', error)
       setError('An error occurred while fetching passwords')
@@ -101,10 +92,11 @@ export default function Dashboard() {
     return <div>Loading passwords...</div>
   }
 
+  const ownedPasswords = filteredPasswords.filter(p => !p.isShared)
+  const sharedPasswords = filteredPasswords.filter(p => p.isShared)
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Password Manager Dashboard</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+    <div className="space-y-8">
       <div className="mb-4">
         <div className="relative">
           <Input
@@ -117,13 +109,14 @@ export default function Dashboard() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
         </div>
       </div>
-      <div className="mb-8">
-        {/* {/* <h2 className="text-xl font-semibold mb-4">Shared Passwords</h2> */}
-        <PasswordList />
+      
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+
+      <div>
         <h2 className="text-xl font-semibold mb-4">Your Passwords</h2>
-        {filteredPasswords.length > 0 ? (
+        {ownedPasswords.length > 0 ? (
           <div className="space-y-4">
-            {filteredPasswords.map((password) => (
+            {ownedPasswords.map((password) => (
               <div key={password.id} className="border p-4 rounded-lg">
                 {editingId === password.id ? (
                   <EditPasswordForm
@@ -143,12 +136,24 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <p>{searchTerm ? 'No passwords match your search.' : 'You haven\'t added any passwords yet.'}</p>
+          <p>You haven&apos;t added any passwords yet.</p>
         )}
       </div>
+
       <div>
-        <h2 className="text-xl font-semibold mb-4">Add New Password</h2>
-        <AddPasswordForm onPasswordAdded={fetchPasswords} />
+        <h2 className="text-xl font-semibold mb-4">Shared Passwords</h2>
+        {sharedPasswords.length > 0 ? (
+          <div className="space-y-4">
+            {sharedPasswords.map((password) => (
+              <div key={password.id} className="border p-4 rounded-lg">
+                <ViewPassword password={password} onDelete={handleDelete} onUpdate={fetchPasswords}/>
+                <p className="mt-2 text-sm text-gray-500">Shared by: {password.sharedBy?.email}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No passwords have been shared with you.</p>
+        )}
       </div>
     </div>
   )
