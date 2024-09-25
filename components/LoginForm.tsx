@@ -40,6 +40,7 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          placeholder='joe@example.com'
         />
       </div>
       <div>
@@ -50,6 +51,7 @@ export default function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          placeholder='meow@home'
         />
       </div>
       <Button type="submit" className="w-full">Login</Button>
