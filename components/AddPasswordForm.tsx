@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import PasswordGenerator from '@/components/PasswordGenerator'
 import PasswordStrengthMeter from '@/components/PasswordStrengthMeter'
 
@@ -18,7 +17,6 @@ export default function AddPasswordForm({ onPasswordAdded }: AddPasswordFormProp
   const [password, setPassword] = useState('')
   const [url, setUrl] = useState('')
   const [message, setMessage] = useState('')
-  const [notes, setNotes] = useState('')
   const [showGenerator, setShowGenerator] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +36,6 @@ export default function AddPasswordForm({ onPasswordAdded }: AddPasswordFormProp
         setUsername('')
         setPassword('')
         setUrl('')
-        setNotes('')
         setShowGenerator(false)
       } else {
         const data = await response.json()
@@ -50,7 +47,7 @@ export default function AddPasswordForm({ onPasswordAdded }: AddPasswordFormProp
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto mt-8">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full mx-auto mt-8">
       <div>
         <Label htmlFor="title">Title</Label>
         <Input
@@ -94,14 +91,6 @@ export default function AddPasswordForm({ onPasswordAdded }: AddPasswordFormProp
           id="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-        />
-      </div>
-      <div>
-        <Label htmlFor="notes">Notes (optional)</Label>
-        <Textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
         />
       </div>
       <Button type="submit" className="w-full">Add Password</Button>

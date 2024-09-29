@@ -76,7 +76,7 @@ export default function LandingPage() {
           <Card className="max-w-2xl mx-auto border-2 border-slate-300 rounded-xl">
             <CardHeader>
               <CardTitle>Ready to Secure Your Passwords?</CardTitle>
-              <CardDescription>Join thousands of users who trust SecurePass</CardDescription>
+              <CardDescription>Join tens of users who trust EncypherX</CardDescription>
             </CardHeader>
             <CardContent>
               <Button size="lg" className=" rounded-2xl bg-slate-300/50" asChild>

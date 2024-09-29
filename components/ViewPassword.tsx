@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, Copy, Trash2, Share2, UserMinus, Tag as TagIcon } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
+import { Eye, EyeOff, Copy, Trash2, Share2, UserMinus, Tag as TagIcon, Globe, Mail } from 'lucide-react'
 import SharePasswordForm from '@/components/SharePasswordForm'
 
 interface SharedWith {
@@ -52,11 +55,13 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
     setSharedWith(password.sharedWith || [])
     setTags(password.tags || [])
   }, [password.sharedWith, password.tags])
+
   const handleViewPassword = async () => {
     try {
       const response = await fetch(`/api/passwords/${password.id}`, {
         method: 'GET',
       })
+
 
       if (response.ok) {
         const data = await response.json()
@@ -119,7 +124,7 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
         const updatedTags = [...tags, data.tag]
         setTags(updatedTags)
         setNewTag('')
-        onUpdate({ ...password, tags: updatedTags })  // Call onUpdate with the updated password
+        onUpdate({ ...password, tags: updatedTags })
       } else {
         const errorData = await response.json()
         setError(errorData.message || 'Failed to add tag')
@@ -139,7 +144,7 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
       if (response.ok) {
         const updatedTags = tags.filter(tag => tag.id !== tagId)
         setTags(updatedTags)
-        onUpdate({ ...password, tags: updatedTags })  // Call onUpdate with the updated password
+        onUpdate({ ...password, tags: updatedTags })
       } else {
         const errorData = await response.json()
         setError(errorData.message || 'Failed to remove tag')
@@ -161,7 +166,7 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
       if (response.ok) {
         const updatedSharedWith = sharedWith.filter(user => user.userId !== sharedWithUserId)
         setSharedWith(updatedSharedWith)
-        onUpdate({ ...password, sharedWith: updatedSharedWith })  // Call onUpdate with the updated password
+        onUpdate({ ...password, sharedWith: updatedSharedWith })
       } else {
         const data = await response.json()
         setError(data.message || 'Failed to revoke sharing')
@@ -185,7 +190,8 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
         const updatedSharedWith = [...sharedWith, { id: data.sharedPassword.userId, email, userId: data.userId }]
         setSharedWith(updatedSharedWith)
         setShowShareForm(false)
-        onUpdate({ ...password, sharedWith: updatedSharedWith })  // Call onUpdate with the updated password
+        onUpdate({ ...password, sharedWith: updatedSharedWith })
+
       } else {
         const errorData = await response.json()
         setError(errorData.message || 'Failed to share password')
@@ -197,122 +203,92 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
   }
 
   return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold">{password.title}</h3>
-          <div className="space-x-2">
-            {!password.isShared && (
-              <Button onClick={() => setShowShareForm(!showShareForm)} size="sm" variant="ghost">
-                <Share2 className="h-4 w-4" />
-              </Button>
-            )}
-            {!password.isShared && (
-              <Button onClick={() => handleDeletePassword()} size="sm" variant="ghost" className="text-red-500">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor={`username-${password.id}`}>Username</Label>
-          <div className="flex items-center space-x-2">
-            <Input
-              id={`username-${password.id}`}
-              value={password.username}
-              readOnly
-              className="flex-grow"
-            />
-            <Button onClick={() => handleCopy(password.username)} size="sm" variant="outline">
-              <Copy className="h-4 w-4" />
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-2xl font-bold">{password.title}</CardTitle>
+        <div className="flex space-x-2">
+          {!password.isShared && (
+            <Button onClick={() => setShowShareForm(!showShareForm)} size="sm" variant="outline" className='border-none hover:text-blue-500'>
+              <Share2 className="h-4 w-4" />
             </Button>
-          </div>
-        </div>
-  
-        <div className="space-y-2">
-          <Label htmlFor={`password-${password.id}`}>Password</Label>
-          <div className="flex items-center space-x-2">
-            <Input
-              id={`password-${password.id}`}
-              type={showPassword ? "text" : "password"}
-              value={showPassword ? passwordValue : '••••••••'}
-              readOnly
-              className="flex-grow"
-            />
-            <Button onClick={showPassword ? () => setShowPassword(false) : handleViewPassword} size="sm" variant="outline">
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          )}
+          {!password.isShared && (
+            <Button onClick={handleDeletePassword} size="sm" variant="destructive" className='border-none hover:text-red-500'>
+              <Trash2 className="h-4 w-4" />
             </Button>
-            {showPassword && (
-              <Button onClick={() => handleCopy(passwordValue)} size="sm" variant="outline">
-                <Copy className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+          )}
         </div>
-  
-        {password.url && (
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`url-${password.id}`}>URL</Label>
+            <Label htmlFor={`username-${password.id}`}>Username</Label>
             <div className="flex items-center space-x-2">
               <Input
-                id={`url-${password.id}`}
-                value={password.url}
+                id={`username-${password.id}`}
+                value={password.username}
                 readOnly
-                className="flex-grow"
+                className="flex-grow border border-slate-300 rounded-xl focus:border-2"
               />
-              <Button onClick={() => window.open(password.url, '_blank')} size="sm" variant="outline">
-                <Share2 className="h-4 w-4" />
+              <Button onClick={() => handleCopy(password.username)} size="sm" variant="outline"  className='border border-slate-300 rounded-xl'>
+                <Copy className="h-4 w-4" />
               </Button>
             </div>
           </div>
-        )}
-  
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        
-        {!password.isShared && (
-          <div className="space-y-4">
-            <Button onClick={() => setShowShareForm(!showShareForm)} className="w-full">
-              {showShareForm ? 'Cancel Sharing' : 'Share Password'}
-            </Button>
-            
-            {showShareForm && (
-              <SharePasswordForm 
-                passwordId={password.id} 
-                onShare={handleShare}
+    
+          <div className="space-y-2">
+            <Label htmlFor={`password-${password.id}`}>Password</Label>
+            <div className="flex items-center space-x-2">
+              <Input
+                id={`password-${password.id}`}
+                type={showPassword ? "text" : "password"}
+                value={showPassword ? passwordValue : '••••••••'}
+                readOnly
+                className="flex-grow border border-slate-300 rounded-xl focus:border-2" 
               />
-            )}
-            
-            {sharedWith.length > 0 && (
-              <div>
-                <h4 className="text-sm font-semibold mb-2">Shared with:</h4>
-                <ul className="space-y-2">
-                  {sharedWith.map((user) => (
-                    <li key={user.id} className="flex items-center justify-between py-1">
-                      <span>{user.email}</span>
-                      <Button onClick={() => handleRevokeShare(user.userId)} size="sm" variant="ghost" className="text-red-500">
-                        <UserMinus className="h-4 w-4" />
-                        <span className="sr-only">Revoke</span>
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              {showPassword && (
+                <Button onClick={() => handleCopy(passwordValue)} size="sm" variant="outline" className='border border-slate-300 rounded-xl'>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              )}
+              <Button onClick={showPassword ? () => setShowPassword(false) : handleViewPassword} size="sm" variant="outline" className='border border-slate-300 rounded-xl'>
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
-        )}
-  
-        <div className="space-y-2">
-          <Label htmlFor={`tags-${password.id}`}>Tags</Label>
-          <div className="flex flex-wrap gap-2">
+    
+          {password.url && (
+            <div className="space-y-2">
+              <Label htmlFor={`url-${password.id}`}>URL</Label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  id={`url-${password.id}`}
+                  value={password.url}
+                  readOnly
+                  className="flex-grow"
+                />
+                <Button onClick={() => window.open(password.url, '_blank')} size="sm" variant="outline">
+                  <Globe className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+    
+        <Separator className='bg-slate-300'/>
+    
+        <div className="space-y-4">
+          <h4 className="text-sm font-semibold">Tags</h4>
+          <div className="flex items-center flex-wrap gap-2">
             {tags.map(tag => (
-              <div key={tag.id} className="flex items-center bg-primary text-primary-foreground px-2 py-1 rounded">
-                <span>{tag.name}</span>
+              <Badge key={tag.id} variant="secondary" className="text-sm border border-slate-300 rounded-xl flex items-center">
+                {tag.name}
                 {!password.isShared && (
-                  <Button onClick={() => handleRemoveTag(tag.id)} size="sm" variant="ghost" className="ml-1 p-0">
-                    <Trash2 className="h-4 w-4" />
+                  <Button onClick={() => handleRemoveTag(tag.id)} size="sm" variant="ghost" className="ml-1 p-0 h-4 w-4">
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 )}
-              </div>
+              </Badge>
             ))}
           </div>
           {!password.isShared && (
@@ -322,15 +298,58 @@ export default function ViewPassword({ password, onDelete, onUpdate }: ViewPassw
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 placeholder="Add a new tag"
-                className="flex-grow"
+                className="flex-grow border border-slate-300 rounded-xl placeholder:text-slate-400"
               />
-              <Button onClick={handleAddTag} size="sm" variant="outline">
-                <TagIcon className="h-4 w-4 mr-2" />
-                Add Tag
+              <Button onClick={handleAddTag} size="sm" variant="outline" className='border border-slate-300 rounded-xl'>
+                <TagIcon className="h-4 w-4" />
               </Button>
             </div>
           )}
         </div>
-      </div>
+    
+        <Separator className='bg-slate-300' />
+    
+        <div className="space-y-4">
+          {/* <h4 className="text-sm font-semibold">Sharing</h4> */}
+          {password.isShared ? (
+            <div className="flex items-center space-x-2">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Shared by: {password.sharedBy?.email || 'Unknown'}
+              </span>
+            </div>
+          ) : (
+            <>
+              {showShareForm && (
+                <SharePasswordForm 
+                  passwordId={password.id} 
+                  onShare={handleShare}
+                />
+              )}
+              
+              {sharedWith.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Shared with:</h4>
+                  <ul className="space-y-2">
+                    { // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    sharedWith.map((user:any) => (
+                      <li key={user.id} className="flex items-center justify-between py-1">
+                        <span className="text-sm z-[3000]">{user.sharedWith.email}</span>
+                        <Button onClick={() => handleRevokeShare(user.userId)} size="sm" variant="ghost" className="text-destructive">
+                          <UserMinus className="h-4 w-4 hover:text-red-500" />
+                          <span className="sr-only">Revoke</span>
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+    
+        {error && <p className="text-destructive text-sm mt-4">{error}</p>}
+      </CardContent>
+    </Card>
   )
 }
